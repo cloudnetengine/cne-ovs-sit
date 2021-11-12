@@ -19,7 +19,7 @@ from resources.libraries.python.topology import suts
 
 __all__ = [
     u"clear_input_output_flows",
-    u"setup_default_pipeline_on_all_duts",
+    u"setup_default_pipeline_on_all_suts",
     u"generate_input_flows",
     u"generate_output_flows",
     u"provision_flows",
@@ -338,7 +338,7 @@ def generate_input_flows(sut, br_name, deploy):
                          f"goto_table:{Constants.OF_TABLE_ACL}")
     return flows
 
-def setup_default_pipeline_on_all_duts(br_name):
+def setup_default_pipeline_on_all_suts(br_name):
     """Setup default pipeline for the bridges.
     Currently overlay and NAT logics are based on this pipeline.
     The stages are: ADMISS/INPUT/ACL/CORE/FIB/NAT/L2_MATCH/OUTPUT.

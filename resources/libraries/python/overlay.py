@@ -21,7 +21,7 @@ from resources.libraries.python.flowutils import delete_flows, \
                                                  generate_input_flows, \
                                                  generate_output_flows, \
                                                  provision_flows, \
-                                                 setup_default_pipeline_on_all_duts
+                                                 setup_default_pipeline_on_all_suts
 
 __all__ = [
     u"set_vif_vni_by_idx_on_vm",
@@ -176,7 +176,7 @@ def deploy_vni_as_tunnel_overlay(br_name, tnl_type, rip_mode='flow',
     :type tnl_md: bool
     """
     _create_tunnel_ports(br_name, tnl_type, rip_mode, tun_id_mode)
-    setup_default_pipeline_on_all_duts(br_name)
+    setup_default_pipeline_on_all_suts(br_name)
     _tunnel_overlay_flow_setup(br_name, tnl_md)
 
 def undeploy_vni_as_tunnel_overlay(br_name):
@@ -193,7 +193,7 @@ def deploy_vni_as_vlan_overlay(br_name):
     :param br_name: Bridge name for VIF attachment, i.e. integration bridge.
     :type br_name: str
     """
-    setup_default_pipeline_on_all_duts(br_name)
+    setup_default_pipeline_on_all_suts(br_name)
     _l2_overlay_flow_setup(br_name, 'vlan')
 
 def undeploy_vni_as_vlan_overlay(br_name):
@@ -211,7 +211,7 @@ def deploy_vni_as_qinq_overlay(br_name):
     """
     for sut in suts:
         sut.vswitch.set_vlan_limit(2)
-    setup_default_pipeline_on_all_duts(br_name)
+    setup_default_pipeline_on_all_suts(br_name)
     _l2_overlay_flow_setup(br_name, 'qinq')
 
 def undeploy_vni_as_qinq_overlay(br_name):

@@ -24,7 +24,7 @@ from resources.libraries.python.constants import Constants
 from resources.libraries.python.vif import InterfaceAddress
 from resources.libraries.python.pal import flush_revalidator_on_all_suts, \
                                            flush_conntrack_on_all_suts
-from resources.libraries.python.flowutils import provision_flows, setup_default_pipeline_on_all_duts
+from resources.libraries.python.flowutils import provision_flows, setup_default_pipeline_on_all_suts
 
 __all__ = [
     u"snat_configure_vms",
@@ -360,7 +360,7 @@ def _nat_setup_flows(vt, br_name, nat_spec):
     sut = sep.host
     vif = sep.vif
 
-    setup_default_pipeline_on_all_duts(br_name)
+    setup_default_pipeline_on_all_suts(br_name)
 
     sut.vswitch.execute(f"ovs-ofctl del-flows {br_name} table={Constants.OF_TABLE_NAT}")
     flows = list()

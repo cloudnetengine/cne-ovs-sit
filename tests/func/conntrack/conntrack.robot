@@ -21,6 +21,7 @@
 | Suite Setup | Run Keywords | Setup Uplink Bridge on All SUTs | br0
 | ...         | AND          | Add VIF Ports on All SUTs | br0
 | ...         | AND          | Start VMs on All SUTs
+| ...         | AND          | Setup Default Pipeline on All SUTs | br0
 | Suite Teardown | Run Keywords | Stop VMs on All SUTs
 | ...            | AND          | Teardown Uplink Bridge on All SUTs | br0
 | Documentation | *CONNTRACK tests.*
@@ -34,7 +35,6 @@
 
 | native conntrack icmp allow all
 | | [Tags] | ICMP
-| | Setup Default Flows | br0
 | | ${verify_topology}= | Run keyword | Verify Topology Get
 | | ACL Setup Allow Proto on All SUTs | br0 | icmp
 | | Execute Ping Verification | ${verify_topology}
