@@ -20,8 +20,7 @@
 | Force Tags | PERF | NORMAL
 | Suite Setup | Run Keywords | Setup Uplink Bridge on All SUTs | br0
 | ...         | AND          | Add VIF Ports on All SUTs | br0
-| Suite Teardown | Run Keywords | Teardown Uplink Bridge on All SUTs | br0
-| ...            | AND          | Reset Topology
+| Suite Teardown | Run Keyword | Teardown Uplink Bridge on All SUTs | br0
 | Documentation | *normal performance test.*
 
 *** Test Cases ***

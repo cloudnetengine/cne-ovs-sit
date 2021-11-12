@@ -29,7 +29,6 @@
 | ...            | AND          | Reset Vif Vni on All SUTs
 | ...            | AND          | Delete Bridge on All SUTs | br-int
 | ...            | AND          | Teardown Uplink Bridge on All SUTs | br0
-| ...            | AND          | Reset Topology
 | Documentation | *vxlan performance test.*
 
 *** Test Cases ***
