@@ -472,13 +472,11 @@ def kill_process(node, proc_name):
     :param proc_name: Process name to be killed.
     :type proc_name: str
     """
-    cmd = f"ps -eo user,pid,comm|grep {proc_name}|grep -v grep| awk '{{print $2}}' " \
+    # Using 'args' instead of 'comm' which might return partial command name,
+    # e.g. "qemu-system-x86_64" as "qemu-system-x86".
+    cmd = f"ps -eo user,pid,args|grep {proc_name}|grep -v grep| awk '{{print $2}}' " \
           f"|xargs -r sudo kill -9"
-    exec_cmd(node, f"ps -ef|grep {proc_name}")
-    exec_cmd(node, f"ps -ef|grep {proc_name}|grep -v grep| awk '{{print $1}}' ")
-    exec_cmd(node, cmd, sudo=True)
-    exec_cmd(node, f"ps -ef|grep {proc_name}")
-    exec_cmd(node, f"ps -ef|grep {proc_name}|grep -v grep| awk '{{print $1}}' ")
+    rc, out, err = exec_cmd(node, cmd, sudo=True)
 
 def scp_node(
         node, local_path, remote_path, get=False, timeout=30, disconnect=False):
