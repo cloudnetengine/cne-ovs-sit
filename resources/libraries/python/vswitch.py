@@ -152,13 +152,16 @@ class VirtualSwitch():
         for cmd in cmds:
             self.execute(cmd, timeout)
 
-    def execute_host(self, cmd, timeout=30):
+    def execute_host(self, cmd, timeout=30, exp_fail=False):
         """Execute a command on a host which the vswitch resides.
 
         :param cmd: Command.
         :param timeout: Timeout value in seconds.
+        :param exp_fail: Expect the command failure or success. Default: False.
+                         None means don't care about the command result.
         :type cmd: str
         :type timeout: int
+        :type exp_fail: bool
         :returns: ret_code, stdout, stderr
         :rtype: tuple(int, str, str)
         """
@@ -167,7 +170,9 @@ class VirtualSwitch():
         logger.trace(stdout)
 
         if ret_code is None or int(ret_code) != 0:
-            raise RuntimeError(f"Execute host cmd failed on {self.ssh_info['host']} : {cmd}")
+            # 'None' for exp_fail means don't care the result
+            if exp_fail is not None and not exp_fail:
+                raise RuntimeError(f"Execute host cmd failed on {self.ssh_info['host']} : {cmd}")
 
         return (ret_code, stdout, stderr)
 
@@ -220,6 +225,9 @@ class VirtualSwitch():
         :returns: Bridge object.
         :rtype: Bridge obj
         """
+        # There might be stale tap interface left on the host if the previous
+        # run is not gracefully exit, just try to delete it.
+        self.execute_host(f"ip link del {br_name}", exp_fail=None)
         br = Bridge(br_name)
         self._create_bridge_impl(br)
         self.bridges.append(br)
