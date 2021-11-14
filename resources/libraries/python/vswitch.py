@@ -530,7 +530,7 @@ class OvsDpdk(VirtualSwitch):
                     f"--log-file --pidfile --detach"]
 
         self.execute_host("ps -ef|grep ovs")
-        self.execute_batch(cmds)
+        self.execute_batch(cmds, timeout=300)
 
         (_, stdout, _) = self.execute_host("pgrep ovs-vswitchd")
         dp_pid = int(stdout)
