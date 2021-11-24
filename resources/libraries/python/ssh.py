@@ -476,7 +476,7 @@ def kill_process(node, proc_name):
     # e.g. "qemu-system-x86_64" as "qemu-system-x86".
     cmd = f"ps -eo user,pid,args|grep {proc_name}|grep -v grep| awk '{{print $2}}' " \
           f"|xargs -r sudo kill -9"
-    rc, out, err = exec_cmd(node, cmd, sudo=True)
+    exec_cmd(node, cmd, sudo=True)
 
 def scp_node(
         node, local_path, remote_path, get=False, timeout=30, disconnect=False):
