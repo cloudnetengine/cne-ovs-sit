@@ -113,6 +113,9 @@ then
     ./configure --disable-ssl --with-dpdk=$DPDK_BUILD --with-logdir=/var/log/openvswitch --with-rundir=/var/run/openvswitch
     make -j4
     OVS_BIN_DIR="${TEST_BIN_DIR}/openvswitch"
+    rm -rf ${OVS_BIN_DIR}
+    rm -rf "${TEST_BIN_DIR}/ovs-native"
+    rm -rf "${TEST_BIN_DIR}/ovs-dpdk"
     mkdir -p ${OVS_BIN_DIR}
     cp ./utilities/ovs-dpctl ${OVS_BIN_DIR}
     cp ./utilities/ovs-appctl ${OVS_BIN_DIR}
