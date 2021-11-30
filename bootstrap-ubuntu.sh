@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 
 # Copyright(c) 2017-2021 CloudNetEngine. All rights reserved.
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,23 +15,37 @@
 
 sudo apt-get install -y --fix-missing build-essential pkg-config \
     libglib2.0-dev libfdt-dev libpixman-1-dev zlib1g-dev libnuma-dev \
-    autoconf libtool python numactl socat git screen gdb
+    autoconf libtool python numactl socat git screen gdb meson ninja-build
+
+# Refer to https://docs.openvswitch.org/en/latest/faq/releases/
+# for the DPDK version used in each OVS version.
+declare -A branch_map
+branch_map['2.13']='19.11'
+branch_map['2.14']='19.11'
+branch_map['2.15']='20.11'
+branch_map['2.16']='20.11'
 
 TEST_ROOT="$PWD/TEST_ROOT"
 TEST_SRC_DIR="${TEST_ROOT}/src"
 TEST_BIN_DIR="${TEST_ROOT}/bin"
-OVS_VERSION="2.13.4"
-DPDK_VERSION="19.11.8"
+
+#OVS_BRANCH="2.13"
+OVS_BRANCH="2.16"
+DPDK_BRANCH=${branch_map[$OVS_BRANCH]}
+use_pkg_conf=true
+if [ "$DPDK_BRANCH" == "19.11" ]; then
+    use_pkg_conf=false
+fi
+
+DPDK_SRC_NAME="dpdk-stable"
+DPDK_DIR="${TEST_SRC_DIR}/${DPDK_SRC_NAME}"
+OVS_SRC_NAME="ovs"
+OVS_DIR="${TEST_SRC_DIR}/${OVS_SRC_NAME}"
+
 # The qemu version must be compatable with qemu agent inside VMs
 QEMU_VERSION="2.5.0"
-OVS_NAME="openvswitch-${OVS_VERSION}"
-DPDK_NAME="dpdk-stable-${DPDK_VERSION}"
 QEMU_NAME="qemu-${QEMU_VERSION}"
-OVS_TARBALL="${OVS_NAME}.tar.gz"
-DPDK_TARBALL="dpdk-${DPDK_VERSION}.tar.xz"
 QEMU_TARBALL="${QEMU_NAME}.tar.xz"
-OVS_URL="https://www.openvswitch.org/releases/${OVS_TARBALL}"
-DPDK_URL="http://static.dpdk.org/rel/${DPDK_TARBALL}"
 QEMU_URL="http://download.qemu.org/${QEMU_TARBALL}"
 
 mkdir -p ${TEST_SRC_DIR}
@@ -46,35 +60,59 @@ then
     cp ${img_file} ${TEST_ROOT}
 fi
 
-# Download DPDK and build it without kernel modules.
-dpdk_lib="${TEST_SRC_DIR}/${DPDK_NAME}/x86_64-native-linuxapp-gcc/lib/libdpdk.a"
-if [ ! -f ${dpdk_lib} ]
+# Download DPDK
+if [ ! -d "$DPDK_DIR" ]
 then
-    wget ${DPDK_URL} --no-check-certificate
-    tar xJf ${DPDK_TARBALL}
-    cd ${TEST_SRC_DIR}/${DPDK_NAME}
+    git clone git://dpdk.org/dpdk-stable
+fi
+cd $DPDK_DIR
+# Disard any uncommitted change
+git checkout .
+git checkout $DPDK_BRANCH
+cp "${DPDK_DIR}/usertools/dpdk-devbind.py" ${TEST_BIN_DIR}
+
+# Bulid DPDK
+if $use_pkg_conf
+then
+    cd $DPDK_DIR
+    export DPDK_BUILD="$DPDK_DIR/build"
+    meson build
+    ninja -C build
+    sudo ninja -C build install
+    sudo ldconfig
+    # Re-export DPDK_BUILD for passing 'static' to ovs configure
+    export DPDK_BUILD="static"
+else
+    cd $DPDK_DIR
     # Don't compile any kernel module
     sed -i -r "s/(CONFIG_RTE_EAL_IGB_UIO *= *).*/\1n/" "config/common_linux"
     sed -i -r "s/(CONFIG_RTE_KNI_KMOD *= *).*/\1n/" "config/common_linux"
     sed -i -r "s/(CONFIG_RTE_LIBRTE_KNI *= *).*/\1n/" "config/common_linux"
     sed -i -r "s/(CONFIG_RTE_LIBRTE_PMD_KNI *= *).*/\1n/" "config/common_linux"
     make install T=x86_64-native-linuxapp-gcc -j4
-    cp "${TEST_SRC_DIR}/${DPDK_NAME}/usertools/dpdk-devbind.py" ${TEST_BIN_DIR}
+    export DPDK_BUILD="${DPDK_DIR}/x86_64-native-linuxapp-gcc"
 fi
 
-# Download OVS and build with DPDK support.
-ovs_bin="${TEST_SRC_DIR}/${OVS_NAME}/vswitchd/ovs-vswitchd"
+cd ${TEST_SRC_DIR}
+# Download OVS
+if [ ! -d "$OVS_DIR" ]
+then
+    git clone https://github.com/openvswitch/ovs.git
+fi
+
+cd $OVS_DIR
+# Disard any uncommitted change
+git checkout .
+git checkout "branch-${OVS_BRANCH}"
+
+# Build OVS
+ovs_bin="${OVS_DIR}/vswitchd/ovs-vswitchd"
 if [ ! -f ${ovs_bin} ]
 then
-    cd ${TEST_SRC_DIR}
-    wget ${OVS_URL} --no-check-certificate
-    tar zxf ${OVS_TARBALL}
-    cd ${TEST_SRC_DIR}/${OVS_NAME}
     ./boot.sh
-    export DPDK_BUILD=${TEST_SRC_DIR}/${DPDK_NAME}/x86_64-native-linuxapp-gcc
     ./configure --disable-ssl --with-dpdk=$DPDK_BUILD --with-logdir=/var/log/openvswitch --with-rundir=/var/run/openvswitch
     make -j4
-    OVS_BIN_DIR=${TEST_BIN_DIR}/${OVS_NAME}
+    OVS_BIN_DIR="${TEST_BIN_DIR}/openvswitch"
     mkdir -p ${OVS_BIN_DIR}
     cp ./utilities/ovs-dpctl ${OVS_BIN_DIR}
     cp ./utilities/ovs-appctl ${OVS_BIN_DIR}
