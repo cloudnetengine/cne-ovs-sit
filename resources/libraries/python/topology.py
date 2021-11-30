@@ -76,6 +76,7 @@ class SUT(Node):
         super().__init__(name, node_spec)
 
         self.huge_mnt = node_spec.get('huge_mnt', SUT.HUGE_MNT)
+        self.userspace_tso = node_spec.get('userspace_tso', True)
         self.numas = list()
         self.hugepage_size = int(node_spec.get('hugepage_size', SUT.HUGEPAGE_SIZE))
         self.hugepage_size *= 1024 # To KB
@@ -212,6 +213,7 @@ class SUT(Node):
             aux_params['socket_mem'] = socket_mem_str
             aux_params['huge_mnt'] = self.huge_mnt
             aux_params['cpu_mask'] = hex(cpu_mask)
+            aux_params['userspace_tso'] = self.userspace_tso
             self.vswitch = OvsDpdk(self.ssh_info, node_spec.get("interfaces", dict()),
                                    tep_addr,
                                    ovs_bin_dir, dpdk_devbind_dir,

@@ -18,6 +18,8 @@ nodes:
   SUT1:
     type: SUT
     dp_type: "ovs-dpdk"
+    # Default is "true"
+    userspace_tso: "false"
     host: "10.10.10.101"
     port: 22
     username: "cne"

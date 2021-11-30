@@ -524,14 +524,12 @@ class OvsDpdk(VirtualSwitch):
                 f"ovs-vsctl --no-wait init",
                 f"ovs-vsctl --no-wait set Open_vSwitch " \
                     f". other_config:dpdk-init=true",
-                #f"ovs-vsctl --no-wait set Open_vSwitch " \
-                #    f". other_config:dpdk-socket-mem=512 " \
-                #    f"other_config:dpdk-hugepage-dir=/dev/hugepages",
                 f"ovs-vsctl --no-wait set Open_vSwitch " \
                     f". other_config:dpdk-socket-mem={self._aux_params['socket_mem']} " \
                     f"other_config:dpdk-hugepage-dir={self._aux_params['huge_mnt']}",
                 f"ovs-vsctl --no-wait set Open_vSwitch " \
-                    f". other_config:vhu-mem-dma-map=false",
+                    f". other_config:userspace-tso-enable=" \
+                    f"{str(self._aux_params['userspace_tso']).lower()}",
                 f"ovs-vsctl --no-wait set Open_vSwitch " \
                     f". other_config:pmd-cpu-mask={self._aux_params['cpu_mask']}",
                 f"ovs-vswitchd unix:/var/run/openvswitch/db.sock " \
