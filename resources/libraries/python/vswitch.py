@@ -458,9 +458,15 @@ class OvsDpdk(VirtualSwitch):
                      f"-- set bridge {br.name} datapath_type=netdev")
 
     def _create_vhost_user_interface_impl(self, br_name, vif):
-        self.execute(f"ovs-vsctl add-port {br_name} {vif.name} "
-                     f"-- set Interface {vif.name} type=dpdkvhostuser "
-                     f"ofport_request={vif.ofp}")
+        if vif.backend_client_mode:
+            self.execute(f"ovs-vsctl add-port {br_name} {vif.name} "
+                         f"-- set Interface {vif.name} type=dpdkvhostuserclient "
+                         f"options:vhost-server-path={vif.sock} "
+                         f"ofport_request={vif.ofp}")
+        else:
+            self.execute(f"ovs-vsctl add-port {br_name} {vif.name} "
+                         f"-- set Interface {vif.name} type=dpdkvhostuser "
+                         f"ofport_request={vif.ofp}")
 
     def _create_uplink_interface_impl(self, br_name, uplink):
         options = ''

@@ -58,8 +58,8 @@ class VirtualMachine(Guest):
         # Daemonize the QEMU process after initialization. Default one
         # management interface.
         self._qemu_opt['options'] = '-cpu host -daemonize -enable-kvm ' \
-            '-machine pc-1.0,accel=kvm,usb=off,mem-merge=off ' \
-            '-net nic,model=virtio -balloon none'
+            '-machine pc-i440fx-2.8,accel=kvm,usb=off,mem-merge=off ' \
+            '-net nic,model=virtio '
         self._qemu_opt['ssh_fwd_port'] = 10022 + vm_idx
         # Default serial console port
         self._qemu_opt['serial_port'] = 4556 + vm_idx
@@ -88,7 +88,7 @@ class VirtualMachine(Guest):
         self._vhost_net_pids = []
 
         self.qemu_bin = os.path.join(test_root_dir,
-                                     'bin/qemu/x86_64-softmmu/qemu-system-x86_64')
+                                     'bin/qemu/qemu-system-x86_64')
         # Change img file if needed.
         self.img_base = os.path.join(test_root_dir, 'cne-ovs-sit-vm-1.0.img')
 

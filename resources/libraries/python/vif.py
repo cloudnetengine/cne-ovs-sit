@@ -67,7 +67,7 @@ class VhostUserInterface(VirtualInterface):
         self.sock = None
         self.qemu_option = ''
         self.qpair = 1
-        self.backend_client_mode = False
+        self.backend_client_mode = True
         self.qemu_script_ifup = None
         self.qemu_script_ifdown = None
 

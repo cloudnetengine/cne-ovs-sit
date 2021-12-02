@@ -282,6 +282,10 @@ class SUT(Node):
                                              idx=if_idx_on_vm,
                                              mac=mac,
                                              ofp=f"{Constants.OFP_VHOST_BASE + if_idx_of_host}")
+                    cm = str(node_spec.get('vhost_client_mode', True)).lower()
+                    if cm == 'false':
+                        vif.backend_client_mode = False
+
                     vif.if_addr = if_addr
                     vif.sock = os.path.join(self.vhost_sock_dir, vif_name)
                     if dp_type == "ovs-native":
