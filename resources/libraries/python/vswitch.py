@@ -443,7 +443,6 @@ class VirtualSwitch():
 
     def stop_vswitch(self):
         """Stop a virtual switch. """
-        self.kill_process("qemu-system-x86_64")
         self.kill_process("ovs-vswitchd")
         self.kill_process("ovsdb-server")
 

@@ -23,7 +23,7 @@ from robot.api import logger
 from robot.libraries.BuiltIn import BuiltIn
 from resources.libraries.python.constants import Constants
 from resources.libraries.python.vif import VhostUserInterface, InterfaceAddress
-from resources.libraries.python.ssh import exec_cmd
+from resources.libraries.python.ssh import exec_cmd, kill_process
 from resources.libraries.python.vm import VirtualMachine
 from resources.libraries.python.vswitch import OvsDpdk, OvsNative
 
@@ -83,6 +83,13 @@ class SUT(Node):
 
         cmd = "lscpu -p"
         _, stdout, _ = exec_cmd(self.ssh_info, cmd)
+
+        # Need to destory stale processes before collecting the available resources.
+        kill_process(self.ssh_info, "qemu-system-x86_64")
+        kill_process(self.ssh_info, "ovs-vswitchd")
+        kill_process(self.ssh_info, "ovsdb-server")
+        # Remove stale rtemap entries
+        exec_cmd(self.ssh_info, f"rm -rf {self.huge_mnt}/rtemap_*")
 
         ## CPU,Core,Socket,Node,,L1d,L1i,L2,L3,L4
         #0,0,0,0,,0,0,0,0,0
