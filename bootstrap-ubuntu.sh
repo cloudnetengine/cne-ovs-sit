@@ -43,8 +43,11 @@ OVS_SRC_NAME="ovs"
 OVS_DIR="${TEST_SRC_DIR}/${OVS_SRC_NAME}"
 
 # The qemu version must be compatable with qemu agent inside VMs
-QEMU_VERSION="2.5.0"
+QEMU_VERSION="5.2.0"
 QEMU_NAME="qemu-${QEMU_VERSION}"
+# 'QEMU_OUTPUT_DIR' is the location of qemu-system-x86_64,
+# if it's not there, the dir needs to be updated.
+QEMU_OUTPUT_DIR="${QEMU_NAME}/build"
 QEMU_TARBALL="${QEMU_NAME}.tar.xz"
 QEMU_URL="http://download.qemu.org/${QEMU_TARBALL}"
 
@@ -131,16 +134,19 @@ then
 fi
 
 # Download and build QEMU
-qemu_bin="${TEST_SRC_DIR}/${QEMU_NAME}/x86_64-softmmu/qemu-system-x86_64"
+cd ${TEST_SRC_DIR}
+# Download QEMU
+if [ ! -f "${TEST_SRC_DIR}/${QEMU_TARBALL}" ]
+then
+    wget ${QEMU_URL} --no-check-certificate
+fi
+qemu_bin="${TEST_SRC_DIR}/${QEMU_OUTPUT_DIR}/qemu-system-x86_64"
 if [ ! -f ${qemu_bin} ]
     then
-    cd ${TEST_SRC_DIR}
-    wget ${QEMU_URL} --no-check-certificate
     tar xJf ${QEMU_TARBALL}
     cd ${TEST_SRC_DIR}/${QEMU_NAME}
     ./configure --target-list=x86_64-softmmu --disable-linux-aio --disable-curses --disable-sdl --disable-gtk --disable-vte --disable-cocoa
-    sed -i 's/\<memfd_create\>/tmp_memfd_create/g' util/memfd.c
-    sed -i '/mntent\.h/ a\#include <sys/sysmacros.h>' qga/commands-posix.c
     make -j4
-    ln -s ${TEST_SRC_DIR}/${QEMU_NAME} "${TEST_BIN_DIR}/qemu"
+    rm -rf "${TEST_BIN_DIR}/qemu"
+    ln -s ${TEST_SRC_DIR}/${QEMU_OUTPUT_DIR} "${TEST_BIN_DIR}/qemu"
 fi
