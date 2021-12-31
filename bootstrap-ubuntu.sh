@@ -51,6 +51,12 @@ QEMU_OUTPUT_DIR="${QEMU_NAME}/build"
 QEMU_TARBALL="${QEMU_NAME}.tar.xz"
 QEMU_URL="http://download.qemu.org/${QEMU_TARBALL}"
 
+GDB_INIT="/root/.gdbinit"
+if [ ! -f ${GDB_INIT} ]
+then
+    echo 'set pagination off ' | sudo tee ${GDB_INIT}
+fi
+
 mkdir -p ${TEST_SRC_DIR}
 mkdir -p ${TEST_BIN_DIR}
 
