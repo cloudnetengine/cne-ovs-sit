@@ -20,17 +20,17 @@ sudo apt-get install -y --fix-missing build-essential pkg-config \
 # Refer to https://docs.openvswitch.org/en/latest/faq/releases/
 # for the DPDK version used in each OVS version.
 declare -A branch_map
-branch_map['2.13']='19.11'
-branch_map['2.14']='19.11'
-branch_map['2.15']='20.11'
-branch_map['2.16']='20.11'
+branch_map['branch-2.13']='19.11'
+branch_map['branch-2.14']='19.11'
+branch_map['branch-2.15']='20.11'
+branch_map['branch-2.16']='20.11'
 
 TEST_ROOT="$PWD/TEST_ROOT"
 TEST_SRC_DIR="${TEST_ROOT}/src"
 TEST_BIN_DIR="${TEST_ROOT}/bin"
 
-#OVS_BRANCH="2.13"
-OVS_BRANCH="2.16"
+#OVS_BRANCH="branch-2.13"
+OVS_BRANCH="branch-2.16"
 DPDK_BRANCH=${branch_map[$OVS_BRANCH]}
 use_pkg_conf=true
 if [ "$DPDK_BRANCH" == "19.11" ]; then
@@ -69,10 +69,13 @@ then
     git clone git://dpdk.org/dpdk-stable
 fi
 cd $DPDK_DIR
-# Disard any uncommitted change
-git checkout .
-git checkout $DPDK_BRANCH
+BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+if [[ "$BRANCH" != "$DPDK_BRANCH" ]]; then
+  # Disard any uncommitted change
+  git checkout .
+  git checkout $DPDK_BRANCH
 cp "${DPDK_DIR}/usertools/dpdk-devbind.py" ${TEST_BIN_DIR}
+fi
 
 # Bulid DPDK
 if $use_pkg_conf
@@ -104,9 +107,12 @@ then
 fi
 
 cd $OVS_DIR
-# Disard any uncommitted change
-git checkout .
-git checkout "branch-${OVS_BRANCH}"
+BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+if [[ "$BRANCH" != "$OVS_BRANCH" ]]; then
+  # Disard any uncommitted change
+  git checkout .
+  git checkout "${OVS_BRANCH}"
+fi
 
 # Build OVS
 ovs_bin="${OVS_DIR}/vswitchd/ovs-vswitchd"
