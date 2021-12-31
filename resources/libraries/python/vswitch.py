@@ -547,9 +547,9 @@ class OvsDpdk(VirtualSwitch):
         dp_pid = int(stdout)
         # Attach background gdb if requested
         if BuiltIn().get_variable_value("${ATTACH_GDB}"):
-            self.execute_host("screen -XS gdbscreen quit")
+            self.execute_host("screen -XS gdbscreen quit", exp_fail=None)
             self.execute_host(f"screen -d -m -S gdbscreen "
-                              f"bash -c \"sudo gdb -ex c -p {dp_pid}\"")
+                              f"bash -c \"sudo gdb -ex cont -p {dp_pid}\"")
 
 
 class OvsNative(VirtualSwitch):
