@@ -60,6 +60,34 @@ fi
 mkdir -p ${TEST_SRC_DIR}
 mkdir -p ${TEST_BIN_DIR}
 
+# Build with release binaries by default
+build_type="release"
+if [ $# -eq 1 ]; then
+    build_type=$1
+elif [ $# -gt 1 ]; then
+    echo "Too many parameters"
+    exit
+fi
+
+if [ -f ${TEST_ROOT}/.build_type ]
+then
+    old_build_type=`cat ${TEST_ROOT}/.build_type`
+    if [ "$build_type" != "$old_build_type" ]
+    then
+        rm -rf "${DPDK_DIR}/build"
+        cd "${OVS_DIR}"
+        make clean
+    fi
+fi
+
+dpdk_build_option=""
+ovs_build_option=""
+if [ $build_type = "debug" ]
+then
+    dpdk_build_option="-Dbuildtype=debug"
+    ovs_build_option="-O0 -g"
+fi
+
 cd ${TEST_SRC_DIR}
 img_file="sit-buildroot/release-images/cne-ovs-sit-vm-1.0.img"
 if [ ! -f ${img_file} ]
@@ -88,7 +116,7 @@ if $use_pkg_conf
 then
     cd $DPDK_DIR
     export DPDK_BUILD="$DPDK_DIR/build"
-    meson build
+    meson build ${dpdk_build_option}
     ninja -C build
     sudo ninja -C build install
     sudo ldconfig
@@ -125,7 +153,7 @@ ovs_bin="${OVS_DIR}/vswitchd/ovs-vswitchd"
 if [ ! -f ${ovs_bin} ]
 then
     ./boot.sh
-    ./configure --disable-ssl --with-dpdk=$DPDK_BUILD --with-logdir=/var/log/openvswitch --with-rundir=/var/run/openvswitch
+    ./configure --disable-ssl --with-dpdk=$DPDK_BUILD --with-logdir=/var/log/openvswitch --with-rundir=/var/run/openvswitch CFLAGS="${ovs_build_option}"
     make -j4
     OVS_BIN_DIR="${TEST_BIN_DIR}/openvswitch"
     rm -rf ${OVS_BIN_DIR}
@@ -162,3 +190,5 @@ if [ ! -f ${qemu_bin} ]
     rm -rf "${TEST_BIN_DIR}/qemu"
     ln -s ${TEST_SRC_DIR}/${QEMU_OUTPUT_DIR} "${TEST_BIN_DIR}/qemu"
 fi
+
+echo $build_type > ${TEST_ROOT}/.build_type
