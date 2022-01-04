@@ -69,15 +69,17 @@ elif [ $# -gt 1 ]; then
     exit
 fi
 
+# Need to initialize build for a fresh deployment or build type change.
+initialize_build=false
 if [ -f ${TEST_ROOT}/.build_type ]
 then
     old_build_type=`cat ${TEST_ROOT}/.build_type`
     if [ "$build_type" != "$old_build_type" ]
     then
-        rm -rf "${DPDK_DIR}/build"
-        cd "${OVS_DIR}"
-        make clean
+        initialize_build=true
     fi
+else
+    initialize_build=true
 fi
 
 dpdk_build_option=""
@@ -103,12 +105,19 @@ then
     git clone git://dpdk.org/dpdk-stable
 fi
 cd $DPDK_DIR
+dpdk_branch_change=false
 BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 if [[ "$BRANCH" != "$DPDK_BRANCH" ]]; then
-  # Disard any uncommitted change
-  git checkout .
-  git checkout $DPDK_BRANCH
-cp "${DPDK_DIR}/usertools/dpdk-devbind.py" ${TEST_BIN_DIR}
+    dpdk_branch_change=true
+    # Disard any uncommitted change
+    git checkout .
+    git checkout $DPDK_BRANCH
+    cp "${DPDK_DIR}/usertools/dpdk-devbind.py" ${TEST_BIN_DIR}
+fi
+
+if $initialize_build || $dpdk_branch_change
+then
+    rm -rf $DPDK_DIR/build
 fi
 
 # Bulid DPDK
@@ -141,37 +150,40 @@ then
 fi
 
 cd $OVS_DIR
+ovs_branch_change=false
 BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 if [[ "$BRANCH" != "$OVS_BRANCH" ]]; then
-  # Disard any uncommitted change
-  git checkout .
-  git checkout "${OVS_BRANCH}"
+    ovs_branch_change=true
+    # Disard any uncommitted change
+    git checkout .
+    git checkout "${OVS_BRANCH}"
 fi
 
-# Build OVS
-ovs_bin="${OVS_DIR}/vswitchd/ovs-vswitchd"
-if [ ! -f ${ovs_bin} ]
+if $initialize_build || $ovs_branch_change
 then
     ./boot.sh
     ./configure --disable-ssl --with-dpdk=$DPDK_BUILD --with-logdir=/var/log/openvswitch --with-rundir=/var/run/openvswitch CFLAGS="${ovs_build_option}"
-    make -j4
-    OVS_BIN_DIR="${TEST_BIN_DIR}/openvswitch"
-    rm -rf ${OVS_BIN_DIR}
-    rm -rf "${TEST_BIN_DIR}/ovs-native"
-    rm -rf "${TEST_BIN_DIR}/ovs-dpdk"
-    mkdir -p ${OVS_BIN_DIR}
-    cp ./utilities/ovs-dpctl ${OVS_BIN_DIR}
-    cp ./utilities/ovs-appctl ${OVS_BIN_DIR}
-    cp ./utilities/ovs-ofctl ${OVS_BIN_DIR}
-    cp ./utilities/ovs-vsctl ${OVS_BIN_DIR}
-    cp ./vswitchd/ovs-vswitchd ${OVS_BIN_DIR}
-    cp ./ovsdb/ovsdb-server ${OVS_BIN_DIR}
-    cp ./vswitchd/vswitch.ovsschema ${OVS_BIN_DIR}
-    cp ./ovsdb/ovsdb-tool ${OVS_BIN_DIR}
-    # OVS binaries can be shared by both userspace and kernel datapath.
-    ln -s ${OVS_BIN_DIR} "${TEST_BIN_DIR}/ovs-native"
-    ln -s ${OVS_BIN_DIR} "${TEST_BIN_DIR}/ovs-dpdk"
 fi
+
+# Build OVS
+rm -rf ${OVS_DIR}/vswitchd/ovs-vswitchd
+make -j4
+OVS_BIN_DIR="${TEST_BIN_DIR}/openvswitch"
+rm -rf ${OVS_BIN_DIR}
+rm -rf "${TEST_BIN_DIR}/ovs-native"
+rm -rf "${TEST_BIN_DIR}/ovs-dpdk"
+mkdir -p ${OVS_BIN_DIR}
+cp ./utilities/ovs-dpctl ${OVS_BIN_DIR}
+cp ./utilities/ovs-appctl ${OVS_BIN_DIR}
+cp ./utilities/ovs-ofctl ${OVS_BIN_DIR}
+cp ./utilities/ovs-vsctl ${OVS_BIN_DIR}
+cp ./vswitchd/ovs-vswitchd ${OVS_BIN_DIR}
+cp ./ovsdb/ovsdb-server ${OVS_BIN_DIR}
+cp ./vswitchd/vswitch.ovsschema ${OVS_BIN_DIR}
+cp ./ovsdb/ovsdb-tool ${OVS_BIN_DIR}
+# OVS binaries can be shared by both userspace and kernel datapath.
+ln -s ${OVS_BIN_DIR} "${TEST_BIN_DIR}/ovs-native"
+ln -s ${OVS_BIN_DIR} "${TEST_BIN_DIR}/ovs-dpdk"
 
 # Download and build QEMU
 cd ${TEST_SRC_DIR}
