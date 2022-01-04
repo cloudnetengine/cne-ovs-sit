@@ -221,6 +221,7 @@ class SUT(Node):
             aux_params['huge_mnt'] = self.huge_mnt
             aux_params['cpu_mask'] = hex(cpu_mask)
             aux_params['userspace_tso'] = self.userspace_tso
+            aux_params['driver'] = node_spec.get('driver', 'vfio-pci')
             self.vswitch = OvsDpdk(self.ssh_info, node_spec.get("interfaces", dict()),
                                    tep_addr,
                                    ovs_bin_dir, dpdk_devbind_dir,

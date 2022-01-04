@@ -504,12 +504,13 @@ class OvsDpdk(VirtualSwitch):
         # No need to track pseudo bond uplink in br
 
     def start_vswitch(self):
-        ### Firstly bind uplink interfaces to uio_pci_generic
-        self.execute_host("modprobe uio_pci_generic")
+        ### Firstly bind uplink interfaces to specified driver
+        driver = self._aux_params['driver']
+        self.execute_host(f"modprobe {driver}")
         idx = 1
         for uplink in self.uplinks:
             cmds = [f"{self._dpdk_devbind_full_cmd} -u {uplink.pci_addr}",
-                    f"{self._dpdk_devbind_full_cmd} -b uio_pci_generic "
+                    f"{self._dpdk_devbind_full_cmd} -b {driver} "
                     f"{uplink.pci_addr}"]
             self.execute_host_batch(cmds)
             uplink.name = f"dpdk{idx}"
