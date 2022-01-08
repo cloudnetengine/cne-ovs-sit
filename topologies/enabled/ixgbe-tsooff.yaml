@@ -1,0 +1,57 @@
+# Copyright(c) 2017-2021 CloudNetEngine. All rights reserved.
+# Copyright (c) 2016 Cisco and/or its affiliates.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at:
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Example file of topology
+
+nodes:
+  SUT1:
+    type: SUT
+    # Datapath type: "ovs-dpdk" or "ovs-native"
+    dp_type: "ovs-dpdk"
+    #userspace_tso: "false"
+    host: "172.18.2.2"
+    port: 22
+    username: "cne"
+    password: "cne"
+    id: 1
+    # hugepage size in MB, should be either "1024" or "2"
+    hugepage_size: "1024"
+    #vhost_client_mode: False
+    vm_mem_size: "1024"
+    userspace_tso: "False"
+    # If there are two uplink interfaces, they must be co-located on the same NUMA node
+    interfaces:
+      port1:
+        pci_address: "0000:04:00.0"
+      port2:
+        pci_address: "0000:04:00.1"
+  SUT2:
+    type: SUT
+    dp_type: "ovs-dpdk"
+    #userspace_tso: "false"
+    host: "172.18.2.3"
+    port: 22
+    username: "cne"
+    password: "cne"
+    id: 3
+    hugepage_size: "1024"
+    #vhost_client_mode: False
+    vm_mem_size: "1024"
+    userspace_tso: "False"
+    huge_mnt: "/dev/hugepages"
+    interfaces:
+      port1:
+        pci_address: "0000:04:00.0"
+      port2:
+        pci_address: "0000:04:00.1"

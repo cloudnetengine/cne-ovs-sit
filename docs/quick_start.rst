@@ -21,10 +21,14 @@ Setup SUT node
 
 2. Configure hugepages:
 
-   Change GRUB_CMDLINE_LINUX_DEFAULT option in /etc/default/grub to the following::
+   Customize GRUB_CMDLINE_LINUX_DEFAULT option in /etc/default/grub:
 
-        GRUB_CMDLINE_LINUX_DEFAULT="default_hugepagesz=1GB hugepagesz=1G hugepages=N"
+       - hugepage config, e.g. using 1G hugepages:
+         "default_hugepagesz=1GB hugepagesz=1G hugepages=N"
            where: ``N`` is number of huge pages requested
+
+       - isolcpus option to isolate cores from the Linux scheduler,
+         so the performance result is more stable.
 
    $ sudo update-grub2
 
@@ -44,8 +48,11 @@ Run tests
    - Customize 'host', 'username', 'password', 'pci_address' etc. in my.yaml
      based on your own setup.
 
+   - You can create new 'testenv' sections in tox.ini to use your own config.
+
 2. Launch the suite for a smoking test (The first time tox execution needs more
    time to install dependency packages)::
 
    $ cd cne-ovs-sit
-   $ tox
+   $ tox -e 'execution name'
+     # where 'execution name' is the name of 'testenv' in tox.ini
