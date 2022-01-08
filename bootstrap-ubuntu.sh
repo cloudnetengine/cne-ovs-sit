@@ -88,6 +88,8 @@ if [ $build_type = "debug" ]
 then
     dpdk_build_option="-Dbuildtype=debug"
     ovs_build_option="-O0 -g"
+else
+    ovs_build_option=" -Ofast -msse4.2 -mpopcnt "
 fi
 
 cd ${TEST_SRC_DIR}
