@@ -17,7 +17,7 @@
 | Library | Collections
 | Library | resources.libraries.python.pal
 | Library | resources.libraries.python.topology
-| Force Tags | PERF | NORMAL
+| Force Tags | PERF | BASIC
 | Suite Setup | Run Keywords | Setup Uplink Bridge on All SUTs | br0
 | ...         | AND          | Add VIF Ports on All SUTs | br0
 | Suite Teardown | Run Keyword | Teardown Uplink Bridge on All SUTs | br0
@@ -59,7 +59,7 @@
 | | Call Method | ${dep.guest} | qemu_guest_poweroff
 
 | Normal offload to offload NUMA
-| | [Tags] | NOTNO | XHOST
+| | [Tags] | NOTNO | NUMA
 | | ${verify_topology}= | Run keyword | Verify Topology Get
 | | ${verify_topology}= | Run keyword
 | | ...                 | Verify Topology Select Pair | ${verify_topology} | NUMA
@@ -74,7 +74,7 @@
 | | Call Method | ${dep.guest} | qemu_guest_poweroff
 
 | Normal non-offload to non-offload NUMA
-| | [Tags] | NOTNO | XHOST
+| | [Tags] | NOTNO | NUMA
 | | ${verify_topology}= | Run keyword | Verify Topology Get
 | | ${verify_topology}= | Run keyword
 | | ...                 | Verify Topology Select Pair | ${verify_topology} | NUMA
