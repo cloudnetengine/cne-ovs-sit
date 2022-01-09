@@ -463,7 +463,9 @@ def execute_performance_test(vt):
     for vte in vt.allow:
         svm = vte.sep.guest
         for dep in vte.get_deps():
-            for proto in ['tcp', 'udp']:
+            # iperf udp test is misleading, so comment it out for now.
+            #for proto in ['tcp', 'udp']:
+            for proto in ['tcp']:
                 result = svm.execute_iperf_ipv4(dep.guest, dep.vif.if_addr.ipv4,
                                                 proto=proto)
                 results.append(result)
