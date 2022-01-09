@@ -18,7 +18,7 @@
 | Library | resources.libraries.python.pal
 | Library | resources.libraries.python.topology
 | Library | resources.libraries.python.overlay
-| Force Tags | PERF | VXLAN
+| Force Tags | PERF | VXLANNOOL
 | Suite Setup | Run Keywords | Setup Uplink Bridge on All SUTs | br0
 | ...         | AND          | Bump Uplink MTU on All SUTs | 1600
 | ...         | AND          | Create Bridge on All SUTs | br-int
@@ -32,7 +32,7 @@
 | Documentation | *vxlan performance test.*
 
 *** Test Cases ***
-| VXLAN offload to offload XHOST
+| VXLAN non-offload to non-offload XHOST
 | | [Tags] | NOTNO | XHOST
 | | ${verify_topology}= | Run keyword | Verify Topology Get
 | | ${verify_topology}= | Run keyword
@@ -40,14 +40,18 @@
 | | ${vte}= | Get From List | ${verify_topology.allow} | 0
 | | ${sep}= | Set Variable | ${vte.sep}
 | | ${dep}= | Set Variable | ${vte.dep_xhost}[0]
+| | Call Method | ${sep.guest} | reconfigure_vhost_user_if | ${sep.vif} | offload=${False}
 | | Call Method | ${sep.guest} | qemu_start
+| | Call Method | ${dep.guest} | reconfigure_vhost_user_if | ${dep.vif} | offload=${False}
 | | Call Method | ${dep.guest} | qemu_start
 | | ${results}= | Run keyword | Execute Performance Test | ${verify_topology}
 | | Print Results | ${results}
+| | Call Method | ${sep.guest} | reconfigure_vhost_user_if | ${sep.vif} | offload=${True}
 | | Call Method | ${sep.guest} | qemu_guest_poweroff
+| | Call Method | ${dep.guest} | reconfigure_vhost_user_if | ${dep.vif} | offload=${True}
 | | Call Method | ${dep.guest} | qemu_guest_poweroff
 
-| VXLAN offload to offload NUMA
+| VXLAN non-offload to non-offload NUMA
 | | [Tags] | NOTNO | NUMA
 | | ${verify_topology}= | Run keyword | Verify Topology Get
 | | ${verify_topology}= | Run keyword
@@ -55,9 +59,13 @@
 | | ${vte}= | Get From List | ${verify_topology.allow} | 0
 | | ${sep}= | Set Variable | ${vte.sep}
 | | ${dep}= | Set Variable | ${vte.dep_numa}[0]
+| | Call Method | ${sep.guest} | reconfigure_vhost_user_if | ${sep.vif} | offload=${False}
 | | Call Method | ${sep.guest} | qemu_start
+| | Call Method | ${dep.guest} | reconfigure_vhost_user_if | ${dep.vif} | offload=${False}
 | | Call Method | ${dep.guest} | qemu_start
 | | ${results}= | Run keyword | Execute Performance Test | ${verify_topology}
 | | Print Results | ${results}
+| | Call Method | ${sep.guest} | reconfigure_vhost_user_if | ${sep.vif} | offload=${True}
 | | Call Method | ${sep.guest} | qemu_guest_poweroff
+| | Call Method | ${dep.guest} | reconfigure_vhost_user_if | ${dep.vif} | offload=${True}
 | | Call Method | ${dep.guest} | qemu_guest_poweroff
