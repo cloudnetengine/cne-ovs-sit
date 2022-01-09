@@ -48,11 +48,18 @@ Run tests
    - Customize 'host', 'username', 'password', 'pci_address' etc. in my.yaml
      based on your own setup.
 
-   - You can create new 'testenv' sections in tox.ini to use your own config.
+   - You can create a new testenv named 'my_env' section in tox.ini to use your own config, e.g.::
+
+        [testenv:my_env]
+        basepython=python3.8
+        deps = -r{toxinidir}/requirements.txt
+        setenv = PYTHONPATH=.
+        commands =
+            robot -L TRACE -v TOPOLOGY_PATH:topologies/enabled/my.yaml --include SMOKE tests/
 
 2. Launch the suite for a smoking test (The first time tox execution needs more
    time to install dependency packages)::
 
    $ cd cne-ovs-sit
-   $ tox -e 'execution name'
-     # where 'execution name' is the name of 'testenv' in tox.ini
+   $ tox -e my_env
+   Note: 'my_env' is created above in tox.ini.
